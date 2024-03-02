@@ -10,4 +10,4 @@
 ![image](https://github.com/KL4M3R/klamer_handcuffs/assets/161390980/a8c75752-069b-4545-ae00-2103ac7aa4a9)
 
 # PREVIEW
-https://youtu.be/Z6QIxa14bSg
+https://www.youtube.com/watch?v=Z6QIxa14bSg
