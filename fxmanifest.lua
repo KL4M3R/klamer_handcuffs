@@ -1,6 +1,6 @@
 author "KL4M3R | https://github.com/KL4M3R"
 description "KL4M3R Simple handcuffs for ox_inventory"
-version '1.2'
+version '1.3'
 
 client_script {
     "Config.lua",

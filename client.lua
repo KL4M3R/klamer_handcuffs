@@ -12,8 +12,6 @@ function klamer_notify(title,text,time,type)
         exports['okokNotify']:Alert(title, text, time, type)
     elseif Config.Notify == 'ox_lib' then
         lib.notify({title = title,description = text,type = type})    
-    elseif Config.Notify == 'esx' then
-        klamer_notify(title,text)
     else
             --Here you can paste your custom notification
     end
@@ -87,40 +85,9 @@ RegisterNetEvent("esx:setJob", function(PlayerJob)
     PlayerData.job.grade = PlayerJob.grade
 end)
 
-CreateThread(function()
-    while true do
-        Wait(1)
-        if LocalPlayer.state.klamer_PlayerIsCuffed then
-            if not IsEntityPlayingAnim(PlayerPedId(), "mp_arresting", "idle", 3) and not setInVehicle then
-                TaskPlayAnim(PlayerPedId(), 'mp_arresting', 'idle', 8.0, -8, -1, 49, 0.0, false, false, false)
-            end
-        else
-            Wait(800)
-        end
-    end
-end)
 
-CreateThread(function()
-    while true do
-        Wait(1)
-        if LocalPlayer.state.klamer_PlayerDraggingSomeone then
-            drawTxt("Press [E] to release the person",0.50,0.80,0.4,255,255,255,180)
-            if IsControlJustPressed(0,38) then
-                local attachedPed, dist = ESX.Game.GetClosestPlayer(GetEntityCoords(PlayerPedId()))
-                attachedPed = GetPlayerPed(attachedPed)
-                if attachedPed ~= 0 then
-                    DetachEntity(attachedPed, true, true)
-                    TriggerServerEvent("klamer_handcuffs:unDragPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(attachedPed)))
-                else
-                    TriggerServerEvent("klamer_handcuffs:unDragPlayer")
-                end
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
 
+local text_loop = false
 exports['qtarget']:Player({
     options = {
         {
@@ -214,9 +181,12 @@ exports['qtarget']:Player({
                 local playerDraggingSomeone = LocalPlayer.state.klamer_PlayerDraggingSomeone
                 if (not entityIsDragged and not entityDraggingSomeone and not playerDraggingSomeone and not target) then
                     TriggerServerEvent("klamer_handcuffs:dragPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)))
+                    text_loop = true
+                    move_3D_text_loop()
                 else
                     klamer_notify("you can't move a player!")
                 end
+                
             end,
             canInteract = function(entity)
                 if IsPedAPlayer(entity) then
@@ -238,6 +208,7 @@ exports['qtarget']:Player({
             label = "put the player away",
             action = function(entity)
                 local playerPed = PlayerPedId()
+                text_loop = false
                 if ESX.PlayerData.job.name == "police" then
                     TriggerServerEvent("klamer_handcuffs:unDragPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)))
                 else
@@ -368,6 +339,7 @@ exports['qtarget']:Player({
     distance = 4.0
 })
 
+
 exports['qtarget']:Vehicle({
     options = {
         {
@@ -424,6 +396,7 @@ local function loadAnimationDictonary(dictname)
 		end
 	end
 end
+local zakajdankowany = false
 
 RegisterNetEvent("klamer_handcuffs:cuffMe", function(playerheading, playercoords, playerlocation, rope)
     local playerPed = PlayerPedId()
@@ -451,6 +424,8 @@ RegisterNetEvent("klamer_handcuffs:cuffMe", function(playerheading, playercoords
         DisablePlayerFiring(playerPed, true)
         SetEnableHandcuffs(playerPed, true)
         SetPedCanPlayGestureAnims(playerPed, false)
+        zakajdankowany = true
+        main_loop_handcuffs()
     else
         loadAnimationDictonary('mp_arresting')
         if not IsEntityPlayingAnim(playerPed, 'mp_arresting', 'idle', 3) then
@@ -460,12 +435,18 @@ RegisterNetEvent("klamer_handcuffs:cuffMe", function(playerheading, playercoords
         SetCurrentPedWeapon(playerPed, 'WEAPON_UNARMED', true)
         DisablePlayerFiring(playerPed, true)
         SetEnableHandcuffs(playerPed, true)
+        zakajdankowany = true
+        main_loop_handcuffs()
         SetPedCanPlayGestureAnims(playerPed, false)
     end
     if rope then
         timer = 900
     end
 end)
+
+
+
+
 
 RegisterNetEvent("klamer_handcuffs:cuffHim", function(fastCuff)
     local playerPed = PlayerPedId()
@@ -498,6 +479,7 @@ RegisterNetEvent("klamer_handcuffs:uncuffMe", function(playerheading, playercoor
         SetPedCanPlayGestureAnims(playerPed, true)
         FreezeEntityPosition(playerPed, false)
         timer = 0
+        zakajdankowany = false
     else
         local x,y,z = table.unpack(playercoords + playerlocation * 1.0)
         SetEntityCoords(playerPed, x, y, z)
@@ -513,6 +495,7 @@ RegisterNetEvent("klamer_handcuffs:uncuffMe", function(playerheading, playercoor
         SetPedCanPlayGestureAnims(playerPed, true)
         FreezeEntityPosition(playerPed, false)
         timer = 0
+        zakajdankowany = false
     end
 end)
 
@@ -595,6 +578,50 @@ RegisterNetEvent('klamer_notify_handcuff',function(text)
     klamer_notify(text)
 end)
 
+
+
+
+function move_3D_text_loop()
+    while text_loop do
+        Citizen.Wait(0)
+        drawTxt("Press [E] to release the person",0.50,0.80,0.4,255,255,255,180)
+        if IsControlJustPressed(0,38) then
+            local attachedPed, dist = ESX.Game.GetClosestPlayer(GetEntityCoords(PlayerPedId()))
+            attachedPed = GetPlayerPed(attachedPed)
+            if attachedPed ~= 0 then
+                DetachEntity(attachedPed, true, true)
+                TriggerServerEvent("klamer_handcuffs:unDragPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(attachedPed)))
+                text_loop=false
+                break
+            else
+                TriggerServerEvent("klamer_handcuffs:unDragPlayer")
+                text_loop=false
+                break
+            end
+        end
+    end
+end
+
+function main_loop_handcuffs()
+    while zakajdankowany do
+        if Config.disable_vehicle then
+            DisableControlAction(0,23,true)
+            DisableControlAction(0,75,true)
+        end
+        DisableControlAction(0,24,true)
+        DisableControlAction(0,140,true)
+        DisableControlAction(0,25,true)
+        if not IsEntityPlayingAnim(PlayerPedId(), "mp_arresting", "idle", 3) and not setInVehicle then
+            TaskPlayAnim(PlayerPedId(), 'mp_arresting', 'idle', 8.0, -8, -1, 49, 0.0, false, false, false)
+        end
+        if LocalPlayer.state.klamer_PlayerIsCuffed then
+        else
+            zakajdankowany = false
+            break
+        end
+        Citizen.Wait(0)
+    end
+end
 AddEventHandler("zakajdankuj", function(entity)
     local playerPed = PlayerPedId()
     local entity = entity.entity
