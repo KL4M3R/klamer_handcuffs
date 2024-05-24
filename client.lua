@@ -632,6 +632,8 @@ AddEventHandler("zakajdankuj", function(entity)
         local coords = GetEntityCoords(playerPed)
         TriggerServerEvent("klamer_handcuffs:cuffPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)), playerheading, coords, playerlocation)
     else
-        klamer_notify('The person must raise their hands!')
+	if Config.HandsUp then
+      	  klamer_notify('The person must raise their hands!')
+	end
     end
 end)
