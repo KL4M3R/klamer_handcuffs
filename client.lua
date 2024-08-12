@@ -635,5 +635,10 @@ if Config.HandsUp then
     else
       	  klamer_notify('The person must raise their hands!')
 	end
+else 
+local playerheading = GetEntityHeading(playerPed)
+        local playerlocation = GetEntityForwardVector(playerPed)
+        local coords = GetEntityCoords(playerPed)
+        TriggerServerEvent("klamer_handcuffs:cuffPlayer
     end
 end)
