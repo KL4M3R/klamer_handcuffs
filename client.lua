@@ -626,13 +626,13 @@ AddEventHandler("zakajdankuj", function(entity)
     local playerPed = PlayerPedId()
     local entity = entity.entity
     local isDead = Player(GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity))).state.klamer_isDead
+if Config.HandsUp then
     if (IsEntityPlayingAnim(entity, "random@mugging3", "handsup_standing_base", 3) or isDead) then
         local playerheading = GetEntityHeading(playerPed)
         local playerlocation = GetEntityForwardVector(playerPed)
         local coords = GetEntityCoords(playerPed)
         TriggerServerEvent("klamer_handcuffs:cuffPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)), playerheading, coords, playerlocation)
-    else
-	if Config.HandsUp then
+    else
       	  klamer_notify('The person must raise their hands!')
 	end
     end
