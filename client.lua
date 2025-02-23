@@ -102,14 +102,10 @@ exports['qtarget']:Player({
                     if Player(GetPlayerServerId(NetworkGetPlayerIndexFromPed(PlayerPedId()))).state.klamer_PlayerIsCuffed then
                         return false
                     end
-                    
                     if not Player(target).state.klamer_PlayerIsCuffed then
                         return true
                     else
                         return false
-                    end
-                    if isDead then
-                        return true
                     end
                 end
             end
@@ -489,7 +485,7 @@ RegisterNetEvent("klamer_handcuffs:uncuffMe", function(playerheading, playercoor
         SetEntityCoords(playerPed, x, y, z)
         SetEntityHeading(playerPed, playerheading)
         loadAnimationDictonary('mp_arresting')
-        Citizen.Wait(255)
+        Citizen.Wait(250)
         TaskPlayAnim(playerPed, 'mp_arresting', 'b_uncuff', 8.0, -8,-1, 2, 0, 0, 0, 0)
         Citizen.Wait(2500)
         ClearPedTasks(playerPed)
@@ -630,20 +626,20 @@ AddEventHandler("zakajdankuj", function(entity)
     local playerPed = PlayerPedId()
     local entity = entity.entity
     local isDead = Player(GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity))).state.klamer_isDead
-if Config.HandsUp then
-    if (IsEntityPlayingAnim(entity, "random@mugging3", "handsup_standing_base", 3) or isDead) then
+    if Config.HandsUp then
+        if (IsEntityPlayingAnim(entity, "random@mugging3", "handsup_standing_base", 3) or isDead) then
+            local playerheading = GetEntityHeading(playerPed)
+            local playerlocation = GetEntityForwardVector(playerPed)
+            local coords = GetEntityCoords(playerPed)
+            TriggerServerEvent("klamer_handcuffs:cuffPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)), playerheading, coords, playerlocation)
+        else
+
+            klamer_notify('The person must raise their hands!')
+        end
+    else 
         local playerheading = GetEntityHeading(playerPed)
         local playerlocation = GetEntityForwardVector(playerPed)
         local coords = GetEntityCoords(playerPed)
         TriggerServerEvent("klamer_handcuffs:cuffPlayer", GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity)), playerheading, coords, playerlocation)
-    else
-
-      	  klamer_notify('The person must raise their hands!')
-	end
-else 
-    local playerheading = GetEntityHeading(playerPed)
-    local playerlocation = GetEntityForwardVector(playerPed)
-    local coords = GetEntityCoords(playerPed)
-    TriggerServerEvent("klamer_handcuffs:cuffPlayer")
-end
+    end
 end)
